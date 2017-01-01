@@ -12,7 +12,7 @@ def load_data(filepath):
     print("item {0} {1}".format("dimension is",dataset.shape))
     return dataset
 
-def knn(kvalue,weight="uniform"):
+def knn(kvalue=1,weight="uniform"):
     filepath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.path.pardir)) 
     trainset = load_data(os.path.join(filepath,"train.csv"))
     testset = load_data(os.path.join(filepath,"test.csv"))

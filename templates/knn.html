@@ -69,7 +69,7 @@
         <div id="hoverinfo" style="margin-left: 100px;font-weight: bold;"></div>
     </div>
     <div class="col-lg-9" >
-        <div id="myDiv" style="width: 810px; height: 500px; align-content: center;"></div>
+        <div id="myDiv" style="width: 810px; height: 600px; align-content: center;"></div>
         
     </div>
 </div>
@@ -113,8 +113,8 @@
 
     function getarraymin(arr) {
         var min = arr[0],
-            result = new Array(2);
-        for (var i=1;i<arr.length;i++) {
+            result = new Array(0,min);
+        for (var i=0;i<arr.length;i++) {
             if (min>arr[i]){
                 min = arr[i];
                 result[0] = i;
@@ -133,12 +133,19 @@
                 dist = Math.pow((xdiff*xdiff+ydiff*ydiff),0.5);
             distance = distance.concat(dist);
         }
+        console.log(array.train_x);
+        console.log(array.train_y);
         while (k--){
             temp_min = getarraymin(distance);
-            result = result.concat(temp_min);
-            result = result.concat(array.train_x[temp_min[0]],array.train_y[temp_min[0]]);
+            result = result.concat(temp_min,array.train_x[temp_min[0]],array.train_y[temp_min[0]]);
             distance[temp_min[0]] = Infinity;
+            console.log('neighbor min');
+            console.log(temp_min);
+            console.log('neighbor inside');
+            console.log(array.train_x[temp_min[0]]);
+            console.log(array.train_y[temp_min[0]]);
         }
+        console.log(distance);
         return result;
     }
 
@@ -220,7 +227,7 @@
                     },
                 },
             },
-            height: 500,
+            height: 600,
             width: 810,
             showlegend: true
         };
@@ -235,14 +242,13 @@
                     var sample_info = d.data.name+' ('+d.x.toPrecision(3)+', '+d.y.toPrecision(3)+')'+'<br/>'+k+' neighbor list:'+'<br/>';
                     var neighbors = getneighbors(d,traindata,k);
                         neighbor_info = [];
-                    console.log(neighbors);
                     for (var i=0;i<(neighbors.length/4);i++){
                         var j = i+1;
                         neighbor_info = neighbor_info.concat('No.'+j+' ('+neighbors[i*4+2].toFixed(3)+', '+neighbors[i*4+3].toFixed(3)+')<br/>'+'distance '+neighbors[i*4+1].toFixed(3)+'<br/>');
                     }
-                    console.log(neighbor_info);
-                    console.log('---')
-                    return (sample_info+neighbor_info);
+                    var result = (sample_info+neighbor_info);
+                    result = result.replace(/>,N/g,'>N');
+                    return result;
                 } else{
                     return (d.data.name+' ('+d.x.toPrecision(3)+','+d.y.toPrecision(3)+')'+'<br/>');
                 }
