@@ -1,0 +1,37 @@
+{% extends "main.html" %}
+
+{% block title %}KMs{% end %}
+{% block sidebar %}
+<li>
+    <a href="/"><i class="fa fa-fw fa-home"></i> HOME</a>
+</li>
+<li>
+    <a href="/knn"><i class="fa fa-fw fa-th"></i> KNN</a>
+</li>
+<li>
+    <a href="/pca"><i class="fa fa-fw fa-list-ol"></i> PCA</a>
+</li>
+<li>
+    <a href="/hc"><i class="fa fa-fw fa-sort-amount-asc"></i> HC</a>
+</li>
+<li class="active">
+    <a href="/kmeans"><i class="fa fa-fw fa-bar-chart"></i> kMeans</a>
+</li>
+<li>
+    <a href="/about"><i class="fa fa-fw fa-info-circle"></i> About</a>
+</li>
+{% end %}
+{% block pageheader %}
+<h1 class="page-header">kMeans</h1>
+<ol class="breadcrumb">
+	<li>
+        <i class="fa fa-home"></i>  <a href="/">Home</a>
+    </li>
+    <li class="active">
+        <i class="fa fa-bar-chart"></i> kMeans
+    </li>
+</ol>
+{% end %}
+{% block mainpage %}
+
+{% end %}

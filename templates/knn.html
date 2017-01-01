@@ -1,0 +1,307 @@
+{% extends "main.html" %}
+
+{% block title %}KNN{% end %}
+{% block sidebar %}
+<li>
+    <a href="/"><i class="fa fa-fw fa-home"></i> HOME</a>
+</li>
+<li class="active">
+    <a href="/knn"><i class="fa fa-fw fa-th"></i> KNN</a>
+</li>
+<li>
+    <a href="/pca"><i class="fa fa-fw fa-list-ol"></i> PCA</a>
+</li>
+<li>
+    <a href="/hc"><i class="fa fa-fw fa-sort-amount-asc"></i> HC</a>
+</li>
+<li>
+    <a href="/kmeans"><i class="fa fa-fw fa-bar-chart"></i> kMeans</a>
+</li>
+<li>
+    <a href="/about"><i class="fa fa-fw fa-info-circle"></i> About</a>
+</li>
+{% end %}
+{% block pageheader %}
+<h1 class="page-header">K Nearest Neighbor</h1>
+<ol class="breadcrumb">
+    <li>
+        <i class="fa fa-home"></i>  <a href="/">Home</a>
+    </li>
+    <li class="active">
+        <i class="fa fa-th"></i> KNN
+    </li>
+</ol>
+{% end %}
+{% block mainpage %}
+<div class="row">
+    <div class="col-lg-3" style="padding: 30px">
+        <form class="form-horizontal" method="post">
+            <style type="text/css">
+                .control-group{
+                    margin: 15px 0;
+                }
+            </style>
+            <div class="control-group">
+                <label>Training set <input class="input-file" id="trainingfile" type="file"/></label>
+                <label>Test set <input class="input-file" id="testingfile" type="file"></label>
+            </div>
+            <progress value="0" max="100"></progress>
+            <div class="help-block" id="status"></div>
+            <div class="control-group">
+                <label class="control-label">K value</label>
+                <input type="text" placeholder="positive integer" class="input-xlarge" id="kvalue"/>
+            </div>
+            <div class="control-group">
+                <label>Weight</label>
+                    <label class="radio-inline">
+                        <input type="radio" value="uniform" name="weight" checked="checked"/>uniform
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" value="distance" name="weight"/>distance
+                    </label>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="button" class="btn btn-info" id="submitbtn">Start</button>
+                </div>
+            </div>
+        </form>
+        <div id="hoverinfo" style="margin-left: 100px;font-weight: bold;"></div>
+    </div>
+    <div class="col-lg-9" >
+        <div id="myDiv" style="width: 810px; height: 500px; align-content: center;"></div>
+        
+    </div>
+</div>
+{% end %}
+{% block script %}
+<script type="text/javascript" src="{{ static_url('js/plotly.min.js') }}"></script>
+<script type="text/javascript">
+    var d3 = Plotly.d3;
+
+    function getunique(inputarray) {
+        var outputarray = [],
+            temp = {},
+            i = 0;
+        for(;i<inputarray.length;++i) {
+            if(temp.hasOwnProperty(inputarray[i]))
+                continue;
+            temp[inputarray[i]] = i;
+            outputarray.push(inputarray[i]);
+        }
+        // console.log(outputarray);
+        return outputarray;
+    }
+
+    function getindexes(array,element) {
+        var result = [];
+        for (var i=0;i<array.length;i++) {
+            if (array[i]==element) {
+                result.push(i);
+            }
+        }
+        return result;
+    }
+
+    function getelements(array,indexes) {
+        var result = [];
+        for (var i=0;i<indexes.length;i++) {
+            result.push(array[indexes[i]]);
+        }
+        return result;
+    }
+
+    function getarraymin(arr) {
+        var min = arr[0],
+            result = new Array(2);
+        for (var i=1;i<arr.length;i++) {
+            if (min>arr[i]){
+                min = arr[i];
+                result[0] = i;
+            }
+        }
+        result[1] = min;
+        return result;
+    }
+
+    function getneighbors(target,array,k) {
+        var result = [],
+            distance = [];
+        for (var i=0;i<array.train_x.length;i++) {
+            var xdiff = Math.abs(target.x-array.train_x[i]),
+                ydiff = Math.abs(target.y-array.train_y[i]),
+                dist = Math.pow((xdiff*xdiff+ydiff*ydiff),0.5);
+            distance = distance.concat(dist);
+        }
+        while (k--){
+            temp_min = getarraymin(distance);
+            result = result.concat(temp_min);
+            result = result.concat(array.train_x[temp_min[0]],array.train_y[temp_min[0]]);
+            distance[temp_min[0]] = Infinity;
+        }
+        return result;
+    }
+
+    function plotgraph(dataset){
+        var traindata = dataset.traindata,
+            testdata = dataset.testdata,
+            tag = getunique(traindata.tag),
+            trace_train = new Array(tag.length);
+            trace_test = new Array(tag.length);
+            colors = [];
+        if (tag.length < 11) {
+            colors = ['rgb(31, 119, 180)','rgb(255, 127, 14)','rgb(44, 160, 44)','rgb(214, 39, 40)','rgb(148, 103, 189)','rgb(51, 255, 153)','rgb(153, 102, 0)','rgb(204, 0, 102)','rgb(255, 51, 153)','rgb(153, 0, 51)'];
+        } else {
+            for (var i=0;i<tag.length;i++) {
+                var r = Math.floor(Math.random()*256),
+                    g = Math.floor(Math.random()*256),
+                    b = Math.floor(Math.random()*256),
+                    rgb = "rgb("+r+','+g+','+b+")";
+                colors = colors.concat(rgb);
+            }
+        }
+
+        for (var i=0;i<tag.length;i++) {
+            var temp_indexes = getindexes(traindata.tag,tag[i]),
+                temp_train_x = getelements(traindata.train_x,temp_indexes),
+                temp_train_y = getelements(traindata.train_y,temp_indexes);
+            trace_train[i] = {
+                x: temp_train_x,
+                y: temp_train_y,
+                type: 'scatter',
+                mode: 'markers',
+                name: 'train '+tag[i],
+                marker: {
+                    symbol: 'circle',
+                    color: colors[i],
+                    opacity: 0.8,
+                    size: 9,
+                },
+            };
+        }
+
+        for (var i=0; i<tag.length;i++) {
+            var temp_indexes = getindexes(testdata.tag,tag[i]),
+                temp_test_x = getelements(testdata.test_x,temp_indexes),
+                temp_test_y = getelements(testdata.test_y,temp_indexes);
+            trace_test[i] = {
+                x: temp_test_x,
+                y: temp_test_y,
+                type: 'scatter',
+                mode: 'markers',
+                name: 'test '+tag[i],
+                marker: {
+                    symbol: 'circle',
+                    color: 'rgb(204,204,204)',
+                    line: {
+                        color: colors[i],
+                        width: 3,
+                    },
+                    opacity: 0.9,
+                    size: 12,
+                },
+            };
+        }
+
+        var data = trace_train.concat(trace_test);
+
+        var layout = {
+            hovermode: 'closest',
+            title: 'knn demo graph',
+            xaxis: {
+                titlefont:{
+                    font: {
+                        color: 'rgb(204,204,204)',
+                    },
+                },
+                tickfont: {
+                    font: {
+                        color: 'rgb(102,102,102)',
+                    },
+                },
+            },
+            height: 500,
+            width: 810,
+            showlegend: true
+        };
+        Plotly.newPlot('myDiv', data, layout);
+        var myPlot = document.getElementById('myDiv'),
+            hoverInfo = document.getElementById('hoverinfo');
+        myPlot.on('plotly_hover',function(data){
+            var info = data.points.map(function(d){
+                var patt = new RegExp('test');
+                if (patt.test(d.data.name)){
+                    var k = $('#kvalue').val();
+                    var sample_info = d.data.name+' ('+d.x.toPrecision(3)+', '+d.y.toPrecision(3)+')'+'<br/>'+k+' neighbor list:'+'<br/>';
+                    var neighbors = getneighbors(d,traindata,k);
+                        neighbor_info = [];
+                    console.log(neighbors);
+                    for (var i=0;i<(neighbors.length/4);i++){
+                        var j = i+1;
+                        neighbor_info = neighbor_info.concat('No.'+j+' ('+neighbors[i*4+2].toFixed(3)+', '+neighbors[i*4+3].toFixed(3)+')<br/>'+'distance '+neighbors[i*4+1].toFixed(3)+'<br/>');
+                    }
+                    console.log(neighbor_info);
+                    console.log('---')
+                    return (sample_info+neighbor_info);
+                } else{
+                    return (d.data.name+' ('+d.x.toPrecision(3)+','+d.y.toPrecision(3)+')'+'<br/>');
+                }
+                
+            });
+            hoverInfo.innerHTML = info.join('<br/>');
+        })
+        .on('plotly_unhover',function(data){
+            hoverInfo.innerHTML = '';
+        });
+    }
+
+</script> 
+<script type="text/javascript">
+    $('#submitbtn').click(function() {
+        var k = $('#kvalue').val(),
+            wgt = $('input[name=weight]:checked').val();
+            trainfile = document.getElementById('trainingfile').files[0];
+            testfile = document.getElementById('testingfile').files[0];
+            formData = new FormData();
+        var para = {
+            "type": "knn",
+            "kvalue": Number(k),
+            "weight": wgt,
+        };
+        formData.append("para",JSON.stringify(para));
+        formData.append("trainset",trainfile);
+        formData.append("testset",testfile);
+        $.ajax({
+            url:"/upload",
+            type:"POST",
+            data:formData,
+            contentType:false,
+            processData:false,
+            cache:false,
+            dataType:"json",
+            success:function(resp){
+                $('div#status').html(resp.status);
+                plotgraph(resp.result);
+            },
+            error:function(resp){
+                $('div#status').html(resp.status);
+            },
+            xhr:function(){
+                myXhr = $.ajaxSettings.xhr();
+                if(myXhr.upload){
+                    myXhr.upload.addEventListener('progress',handleProgress,false);
+                }
+                return myXhr;
+            }
+        });
+        $('div#status').html('File is being uploaded...');
+        return false;
+    });
+    handleProgress = function(evnt){
+        if(evnt.lengthComputable){
+            var ratio = (evnt.loaded / evnt.total) * 100;
+            $('progress').attr({value: ratio});
+        }
+    };
+</script>
+{% end %}

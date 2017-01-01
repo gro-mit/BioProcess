@@ -1,0 +1,139 @@
+{% extends "main.html" %}
+
+{% block title %}Home{% end %}
+{% block sidebar %}
+<li class="active">
+    <a href="/"><i class="fa fa-fw fa-home"></i> HOME</a>
+</li>
+<li>
+    <a href="/knn"><i class="fa fa-fw fa-th"></i> KNN</a>
+</li>
+<li>
+    <a href="/pca"><i class="fa fa-fw fa-list-ol"></i> PCA</a>
+</li>
+<li>
+    <a href="/hc"><i class="fa fa-fw fa-sort-amount-asc"></i> HC</a>
+</li>
+<li>
+    <a href="/kmeans"><i class="fa fa-fw fa-bar-chart"></i> kMeans</a>
+</li>
+<li>
+    <a href="/about"><i class="fa fa-fw fa-info-circle"></i> About</a>
+</li>
+{% end %}
+{% block pageheader %}
+<h1 class="page-header">
+	BioProcess <small>Easy to visualize</small>
+</h1>
+<ol class="breadcrumb">
+	<li class="active">
+		<i class="fa fa-home"></i> Home
+	</li>
+</ol>
+{% end %}
+{% block mainpage %}
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-th fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">KNN</div>
+                        <div>k nearest neighbor</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/knn">
+                <div class="panel-footer">
+                    <span class="pull-left">Start Now</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-list-ol fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">PCA</div>
+                        <div>principal component analysis</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/pca">
+                <div class="panel-footer">
+                    <span class="pull-left">Start Now</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-red">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-sort-amount-asc fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">HC</div>
+                        <div>hierarchical clustering</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/hc">
+                <div class="panel-footer">
+                    <span class="pull-left">Start Now</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-yellow">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-bar-chart fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">KMs</div>
+                        <div>k-means</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/kmeans">
+                <div class="panel-footer">
+                    <span class="pull-left">Start now</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- /.row -->
+
+<div style="padding: 60px; background: url({{ static_url('img/data_analysis.png') }}) no-repeat -150px center;background-size: 1500px 1000px" class="jumbotron">
+	<h1>Welcome to BioProcess</h1>
+    <p>This is a visual tool for data analysis. It includes KNN, PCA, hierarchical clustering <br/>and k-means which will be visualized to help you get thorough understanding of the data.</p>
+    <p>
+    	<a href="/knn" class="btn btn-primary btn-lg" role="button">Learn from KNN</a>
+    </p>
+    
+</div>
+
+{% end %}
+{% block script %}
+
+{% end %}
