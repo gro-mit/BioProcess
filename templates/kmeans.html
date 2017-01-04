@@ -1,6 +1,11 @@
 {% extends "main.html" %}
 
 {% block title %}KMs{% end %}
+{% block header %}
+<style type="text/css">
+    .input-xlarge{display: block;}
+</style>
+{% end %}
 {% block sidebar %}
 <li>
     <a href="/"><i class="fa fa-fw fa-home"></i> HOME</a>
@@ -24,7 +29,7 @@
 {% block pageheader %}
 <h1 class="page-header">kMeans</h1>
 <ol class="breadcrumb">
-	<li>
+    <li>
         <i class="fa fa-home"></i>  <a href="/">Home</a>
     </li>
     <li class="active">
@@ -33,5 +38,216 @@
 </ol>
 {% end %}
 {% block mainpage %}
+<div class="row">
+    <div class="col-lg-3" style="padding: 30px">
+        <form class="form-horizontal" method="post">
+            <style type="text/css">
+                .control-group{
+                    margin: 15px 0;
+                }
+            </style>
+            <div class="control-group">
+                <label>Data set <input class="input-file" id="datafile" type="file"/></label>
+            </div>
+            <progress value="0" max="100"></progress>
+            <div class="help-block" id="status"></div>
+            <div class="control-group">
+                <label class="control-label">K value</label>
+                <input type="text" placeholder="positive integer" class="input-xlarge" id="kvalue"/>
+                <label class="control-label">Random Seed</label>
+                <input type="text" placeholder="to initial centroids" class="input-xlarge" id="seed"/>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="button" class="btn btn-info" id="submitbtn">Start</button>
+                </div>
+            </div>
+        </form>
+        <div id="hoverinfo" style="margin-left: 100px;font-weight: bold;"></div>
+    </div>
+    <div class="col-lg-9" >
+        <div id="myDiv" style="width: 810px; height: 600px; align-content: center;"></div>
+        
+    </div>
+</div>
+{% end %}
+{% block script %}
+<script type="text/javascript" src="{{ static_url('js/plotly.min.js') }}"></script>
+<script type="text/javascript">
+    var d3 = Plotly.d3;
 
+    function getunique(inputarray) {
+        var outputarray = [],
+            temp = {},
+            i = 0;
+        for(;i<inputarray.length;++i) {
+            if(temp.hasOwnProperty(inputarray[i]))
+                continue;
+            temp[inputarray[i]] = i;
+            outputarray.push(inputarray[i]);
+        }
+        // console.log(outputarray);
+        return outputarray;
+    }
+
+    function getindexes(array,element) {
+        var result = [];
+        for (var i=0;i<array.length;i++) {
+            if (array[i]==element) {
+                result.push(i);
+            }
+        }
+        return result;
+    }
+
+    function getelements(array,indexes) {
+        var result = [];
+        for (var i=0;i<indexes.length;i++) {
+            result.push(array[indexes[i]]);
+        }
+        return result;
+    }
+
+    function plotgraph(jsondata){
+        // console.log(jsondata);
+        var dataset = jsondata.dataset,
+            centroids = jsondata.centroids,
+            clustertag = getunique(dataset.clusterlabel),
+            k = $('#kvalue').val(),
+            trace_data = new Array(k),
+            trace_centroids = new Array(1),
+            colors = [];
+        // console.log(dataset)
+        if (k < 11) {
+            colors = ['rgb(31, 119, 180)','rgb(255, 127, 14)','rgb(44, 160, 44)','rgb(214, 39, 40)','rgb(148, 103, 189)','rgb(51, 255, 153)','rgb(153, 102, 0)','rgb(204, 0, 102)','rgb(255, 51, 153)','rgb(153, 0, 51)'];
+        } else {
+            for (var i=0;i<k;i++) {
+                var r = Math.floor(Math.random()*256),
+                    g = Math.floor(Math.random()*256),
+                    b = Math.floor(Math.random()*256),
+                    rgb = "rgb("+r+','+g+','+b+")";
+                colors = colors.concat(rgb);
+            }
+        }
+        for (var i=0;i<k;i++){
+            var temp_indexes = getindexes(dataset.clusterlabel,clustertag[i]),
+                temp_data_x = getelements(dataset.data_x,temp_indexes),
+                temp_data_y = getelements(dataset.data_y,temp_indexes),
+                temp_data_tag = getelements(dataset.tag,temp_indexes);
+            trace_data[i] = {
+                x: temp_data_x,
+                y: temp_data_y,
+                type: 'scatter',
+                mode: 'markers',
+                name: 'cluster '+clustertag[i],
+                actualtag: temp_data_tag,
+                marker: {
+                    symbol: 'circle',
+                    color: colors[i],
+                    opacity: 0.8,
+                    size: 9,
+                },
+
+            };
+        }
+        trace_centroids[0] = {
+            x: centroids.centroids_x,
+            y: centroids.centroids_y,
+            type: 'scatter',
+            mode: 'markers',
+            name: centroids.tag,
+            marker: {
+                symbol: 'circle',
+                color: 'rgb(240,240,240)',
+                line: {
+                    color: 'rgb(50,50,50)',
+                    width: 2,
+                },
+                opacity: 0.9,
+                size: 10,
+            },
+        };
+        var data = trace_data.concat(trace_centroids);
+        var layout = {
+            hovermode: 'closest',
+            title: 'kmeans demo graph',
+            xaxis: {
+                zeroline: false,
+                title: 'x-axis',
+                hoverformat: '.2r',
+            },
+            yaxis: {
+                zeroline: false,
+                title: 'y-axis',
+                hoverformat: '.2r',
+            },
+            height: 600,
+            width: 810,
+            showlegend: true,
+        };
+        Plotly.newPlot('myDiv', data, layout);
+        var myPlot = document.getElementById('myDiv'),
+            hoverInfo = document.getElementById('hoverinfo');
+        myPlot.on('plotly_hover',function(data){
+            // console.log(data.points[0]);
+            var info = data.points.map(function(d){
+                if (d.data.name === 'centroids') {
+                    return (d.data.name+' ('+d.x.toPrecision(3)+','+d.y.toPrecision(3)+')'+'<br/>');
+                } else {
+                    return ('actual label '+d.data.actualtag[d.pointNumber]);
+                }
+            });
+            hoverInfo.innerHTML = info.join('<br/>');
+        })
+        .on('plotly_unhover',function(data){
+            hoverInfo.innerHTML = '';
+        });
+    }
+</script>
+<script type="text/javascript">
+    $('#submitbtn').click(function(){
+        var k = $('#kvalue').val(),
+            seed = $('#seed').val(),
+            datafile = document.getElementById('datafile').files[0],
+            formData = new FormData();
+        var para = {
+            "type": "kmeans",
+            "kvalue": Number(k),
+            "seed": Number(seed),
+            };
+        formData.append("para",JSON.stringify(para));
+        formData.append("dataset",datafile);
+        $.ajax({
+                url:"/upload",
+                type:"POST",
+                data:formData,
+                contentType:false,
+                processData:false,
+                cache:false,
+                dataType:"json",
+                success:function(resp){
+                    $('div#status').html(resp.status);
+                    plotgraph(resp.result);
+                },
+                error:function(resp){
+                    $('div#status').html(resp.status);
+                },
+                xhr:function(){
+                    myXhr = $.ajaxSettings.xhr();
+                    if(myXhr.upload){
+                        myXhr.upload.addEventListener('progress',handleProgress,false);
+                    }
+                    return myXhr;
+                }
+            });
+            $('div#status').html('File is being uploaded...');
+            return false;
+        });
+    handleProgress = function(evnt){
+        if(evnt.lengthComputable){
+            var ratio = (evnt.loaded / evnt.total) * 100;
+            $('progress').attr({value: ratio});
+        }
+    };
+</script>
 {% end %}

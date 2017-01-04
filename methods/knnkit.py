@@ -5,22 +5,19 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.manifold import MDS
 import os
-
-def load_data(filepath):
-    #load the dataset as a ndarray.
-    dataset = np.loadtxt(open(filepath,"rb"),delimiter=",",skiprows=0)
-    print("item {0} {1}".format("dimension is",dataset.shape))
-    return dataset
+from loadkit import load_data
 
 def knn(kvalue=1,weight="uniform"):
-    filepath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.path.pardir)) 
-    trainset = load_data(os.path.join(filepath,"train.csv"))
-    testset = load_data(os.path.join(filepath,"test.csv"))
+    filepath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.path.pardir,"tempfile"))
+    # print filepath
+    trainset = load_data(os.path.join(filepath,"knn_train.csv"))
+    testset = load_data(os.path.join(filepath,"knn_test.csv"))
     traintag = trainset[:,0]
+    attrnum = trainset.shape[1]
     #testtag = testset[:,0]------------------------the order of mds and knn!!!!!
     mds = MDS(random_state=19)
-    low_trainset = mds.fit_transform(trainset)
-    low_testset = mds.fit_transform(testset)
+    low_trainset = mds.fit_transform(trainset[:,2:attrnum])
+    low_testset = mds.fit_transform(testset[:,2:attrnum])
     clf = KNeighborsClassifier(n_neighbors=kvalue,weights=weight)
     clf.fit(low_trainset,traintag)
     testpred = clf.predict(low_testset)
@@ -36,4 +33,4 @@ def knn(kvalue=1,weight="uniform"):
     low_testset = {'tag':testpred,'test_x':test_x,'test_y':test_y}
     compresseddata = {'traindata':low_trainset,'testdata':low_testset}
     return compresseddata
-    
+

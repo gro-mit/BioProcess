@@ -70,7 +70,6 @@
     </div>
     <div class="col-lg-9" >
         <div id="myDiv" style="width: 810px; height: 600px; align-content: center;"></div>
-        
     </div>
 </div>
 {% end %}
@@ -89,7 +88,6 @@
             temp[inputarray[i]] = i;
             outputarray.push(inputarray[i]);
         }
-        // console.log(outputarray);
         return outputarray;
     }
 
@@ -133,19 +131,11 @@
                 dist = Math.pow((xdiff*xdiff+ydiff*ydiff),0.5);
             distance = distance.concat(dist);
         }
-        console.log(array.train_x);
-        console.log(array.train_y);
         while (k--){
             temp_min = getarraymin(distance);
             result = result.concat(temp_min,array.train_x[temp_min[0]],array.train_y[temp_min[0]]);
             distance[temp_min[0]] = Infinity;
-            console.log('neighbor min');
-            console.log(temp_min);
-            console.log('neighbor inside');
-            console.log(array.train_x[temp_min[0]]);
-            console.log(array.train_y[temp_min[0]]);
         }
-        console.log(distance);
         return result;
     }
 
@@ -175,6 +165,7 @@
             trace_train[i] = {
                 x: temp_train_x,
                 y: temp_train_y,
+                hoverinfo: 'name+x+y',
                 type: 'scatter',
                 mode: 'markers',
                 name: 'train '+tag[i],
@@ -216,20 +207,18 @@
             hovermode: 'closest',
             title: 'knn demo graph',
             xaxis: {
-                titlefont:{
-                    font: {
-                        color: 'rgb(204,204,204)',
-                    },
-                },
-                tickfont: {
-                    font: {
-                        color: 'rgb(102,102,102)',
-                    },
-                },
+                zeroline: false,
+                title: 'x-axis',
+                hoverformat: '.2r',
+            },
+            yaxis: {
+                zeroline: false,
+                title: 'y-axis',
+                hoverformat: '.2r',
             },
             height: 600,
             width: 810,
-            showlegend: true
+            showlegend: true,
         };
         Plotly.newPlot('myDiv', data, layout);
         var myPlot = document.getElementById('myDiv'),
@@ -258,6 +247,14 @@
         })
         .on('plotly_unhover',function(data){
             hoverInfo.innerHTML = '';
+        });
+        myPlot.on('plotly_click',function(data){
+            var point = data.points[0],
+                newAnnotation = {
+
+                },
+                divid = document.getElementById('myDiv');
+                newIndex = (divid.layout.annotation || []).length;
         });
     }
 
