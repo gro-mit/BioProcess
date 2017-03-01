@@ -10,7 +10,7 @@ import tornado.options
 import tornado.web
 
 from Handlers import *
-from methods import knn,kmeans
+from methods import knn,kmeans,hc
 
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
@@ -60,6 +60,15 @@ class UploadHandler(tornado.web.RequestHandler):
             result = kmeans(kvalue=para['kvalue'],seed=para['seed'])
             status = 'success'
             respon = {'status':status,'result':result}
+            respon_json = tornado.escape.json_encode(respon)
+        if para['type'] == 'hc':
+            # print para['kvalue']
+            f = open(os.path.join(os.path.dirname(__file__),"tempfile","hc_data.csv"),"wb")
+            f.write(self.request.files["dataset"][0].body)
+            f.close()
+            result = hc()
+            status = 'success'
+            respon = {'status':status}
             respon_json = tornado.escape.json_encode(respon)
         self.write(respon_json)
 
